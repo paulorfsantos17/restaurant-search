@@ -25,6 +25,7 @@ export const Title = styled.span`
   font-family: ${(props) => props.theme.fonts.fontFamily};
   font-weight: bold;
   font-size: 24px;
+  text-align: left;
   line-height: 29px;
   margin-bottom: 10px;
 `;
@@ -33,5 +34,13 @@ export const Address = styled.span`
   font-family: ${(props) => props.theme.fonts.fontFamily};
   font-size: 16px;
   line-height: 19px;
-  margin-bottom: 10px;
+  margin: 10px 0;
+  text-align: left;
 `;
+
+export const RestaurantPhoto = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
+  object-fit: cover;
+`

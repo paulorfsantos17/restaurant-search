@@ -1,14 +1,12 @@
-import React from 'react'
-import { Card, Title } from './styles'
+import React from "react";
+import { Card, Title } from "./styles";
 
-const ImageCard = ({image, nameRestaurant}) => {
+const ImageCard = ({ image, nameRestaurant }) => {
   return (
     <Card photo={image}>
-      <Title>
-        {nameRestaurant}
-      </Title>
+      <Title>{nameRestaurant}</Title>
     </Card>
-  )
-}
+  );
+};
 
-export default ImageCard
+export default ImageCard;
