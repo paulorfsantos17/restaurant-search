@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
 import GoogleMapReact from "google-map-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import "./style.css";
 
 import { setRestaurant, setRestaurants } from "../../redux/modules/restaurants";
 
 const AnyReactComponent = ({ text }) => <div>{text}</div>;
 
-export default function SimpleMap({ query }) {
+const Marker = (props) => {
+  return (
+    <>
+      <div className="pin"></div>
+      <div className="pulse"></div>
+    </>
+  );
+};
+
+export default function SimpleMap({ query, placeId }) {
   const dispatch = useDispatch();
+  const { restaurants } = useSelector((state) => state.restaurants);
 
   const [center, setCenter] = useState();
   const [map, setMap] = useState();
@@ -39,14 +50,10 @@ export default function SimpleMap({ query }) {
     }
   };
 
-  const searchNearby = (mapApi) => {
-    let markers= []
-    setGoogleAPi(mapApi);
-    console.log(mapApi)
-
-    const google = mapApi.maps;
-    const map = mapApi.map;
-
+  const searchNearby = (map, maps) => {
+    dispatch(setRestaurants([]))
+    setGoogleAPi(maps);
+    const google = maps;
     setMap(map);
 
     const service = new google.places.PlacesService(map);
@@ -57,26 +64,20 @@ export default function SimpleMap({ query }) {
       type: ["restaurant"],
     };
 
-    service.nearbySearch(request, (results, status) => {
+    service.nearbySearch(request, (restaurants, status) => {
       if (status === google.places.PlacesServiceStatus.OK) {
-        dispatch(setRestaurants(results));
-        results.forEach((place) =>  {
-          markers.push(new google.Marker({
-            position: {
-              lat: place.geometry.location.lat,
-              lng: place.geometry.location.lng,
-            }
-          }))
-        })
+        dispatch(setRestaurants(restaurants));
       }
     });
   };
 
   function searchByQuery() {
-    
-    const google = googleApi.maps;
+
+    const google = googleApi;
 
     const service = new google.places.PlacesService(map);
+
+    dispatch(setRestaurants([]))
 
     const request = {
       map,
@@ -85,14 +86,43 @@ export default function SimpleMap({ query }) {
       type: ["restaurant"],
       query,
     };
-    console.log(service);
+
     service.textSearch(request, (results, status) => {
       if (status === google.places.PlacesServiceStatus.OK) {
         console.log(results);
-        dispatch(setRestaurant(results));
+        dispatch(setRestaurants(results));
       }
     });
   }
+
+  function getRestaurantById(placeId) {
+    dispatch(setRestaurant(null))
+    const service = new googleApi.places.PlacesService(map);
+
+    const request = {
+      placeId,
+      fields: [
+        "name",
+        "opening_hours",
+        "formatted_address",
+        "formatted_phone_number",
+      ],
+    };
+
+    service.getDetails(request, (restaurant, status) => {
+      if (status === googleApi.places.PlacesServiceStatus.OK) {
+
+        dispatch(setRestaurant(restaurant));
+      }
+    });
+  }
+
+  useEffect(() => {
+  
+    if (placeId) {
+      getRestaurantById(placeId);
+    }
+  }, [placeId]);
 
   useEffect(() => {
     getPosition();
@@ -116,15 +146,25 @@ export default function SimpleMap({ query }) {
             libraries: ["places"],
           }}
           defaultCenter={center}
-          defaultZoom={15}
+          defaultZoom={11}
           yesIWantToUseGoogleMapApiInternals
-          onGoogleApiLoaded={(map) => searchNearby(map)}
+          onGoogleApiLoaded={({ map, maps }) => searchNearby(map, maps)}
         >
           <AnyReactComponent
             lat={59.955413}
             lng={30.337844}
             text="Libere seu navegador para usar sua localização!"
           />
+
+          {restaurants.map((restaurant) => {
+            return (
+              <Marker
+                key={restaurant.place_id}
+                lat={restaurant.geometry.location.lat()}
+                lng={restaurant.geometry.location.lng()}
+              />
+            );
+          })}
         </GoogleMapReact>
       ) : (
         "De permissão para o seu navegador, usar a sua localidade para utilizar está aplicação! "

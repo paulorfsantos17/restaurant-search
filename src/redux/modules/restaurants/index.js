@@ -15,7 +15,7 @@ export default function reducer(state = initialState, action) {
     case Types.SET_RESTAURANT:
       return {
         ...state,
-        restaurant: action.payload,
+        restaurantSelected: action.payload,
       };
     default:
       return state;
